@@ -78,22 +78,22 @@ fun validateString(input: String, max: Int): String {
     }
 }
 
-fun register() {
-    // suggestion: ask for user details, validate them, add to users HashMap
-}
+// fun register() {
+//     // suggestion: ask for user details, validate them, add to users HashMap
+// }
 
-fun login() {
-    // suggestion: check userID & password before entering menu
-}
+// fun login() {
+//     // suggestion: check userID & password before entering menu
+// }
 
-fun userMenu(userID: Int) {
-    // fixed println syntax
-    println("Welcome, ${userID}!")  
-    // suggestion: use when clause for menu choices inside a loop, not recursion
-}
+// fun userMenu(userID: Int) {
+//     // fixed println syntax
+//     println("Welcome, ${userID}!")  
+//     // suggestion: use when clause for menu choices inside a loop, not recursion
+// }
 
 fun main() {
     // main loop: keep running until user exits
-    register()
+    // register()
     // suggestion: avoid deep function calls; use while(true) for menu navigation
 }
