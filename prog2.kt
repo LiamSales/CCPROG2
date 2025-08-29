@@ -1,33 +1,99 @@
-//pseudo code first, understand the specs
+import kotlinx.datetime.LocalDate
+import kotlinx.datetime.Month
 
-//buying and selling of items
-// 100 users, 20 items per seller, set of transactions
-// user class buyer/seller , int UserID, password, name, adress, int contact, array of items [20], 
-// item class prodID, item name, category, desc, int quanityt (stock), float price, seller ID 
-// transaction, date obj, array of 5 items(their price too), referrence to buyer and seller id, total amount (sum of prices), buyer!=seller, all from same seller
+// create HashMaps for quick lookup later if needed
+// val users = mutableMapOf<Int, User>()
+// val items = mutableMapOf<Int, Item>()
 
+class User(
+    val id: Int,
+    val name: String,
+    val password: String,
+    val address: String,
+    val contact: Int
+) {
+    val itemIDs = mutableListOf<Int>()
 
-//functions
-//register as user, all info given, do the return valid thingy but make a parameter for size, unique userID, no need to be 0-99 can be 10000
-// admin menu or user menu (sell and buy)
+    fun addItem(itemID: Int) {
+        if (itemIDs.size < 20) {
+            this.itemIDs.add(itemID)
+        } else {
+            println("Cannot add more than 20 items.")
+        }
+    }
+}
 
-//sellmenu
-/*
-    add new item, everything except the seller ID, prodID sure
-    prodID has to be globally unique
-    seller has an item limit fixed array of 20
+class Item(
+    val prodID: Int,
+    val sellID: Int,
+    var name: String,
+    var category: String,
+    var description: String,
+    var price: Float,
+    var quantity: Int
+) {
+    fun subtractQuantity(decrement: Int) {
+        if (decrement <= this.quantity) this.quantity -= decrement
+        else println("Not enough stock available.")
+    }
 
-    after add, sell menu exit to user menu or cancel
+    fun replenish(stock: Int) {
+        this.quantity += stock
+    }
 
+    fun changeCategory(newCategory: String) {
+        this.category = newCategory
+    }
 
-*/
+    fun changeDescription(newDescription: String) {
+        this.description = newDescription
+    }
 
+    fun changePrice(newPrice: Float) {
+        this.price = newPrice
+    }
+}
 
-//use hashmaps for quick location
+class Transaction(
+    val buyer: Int,
+    val seller: Int,
+    val date: String
+) {
+    // MutableList lets you add multiple items with quantities
+    private val itemArray = mutableListOf<Int>()    // replaced Arrayof<Int>(5)
 
-//exit user menu
-//admin menu
-// doesnt edit anything actually, just shows
+    // Suggestion: use a data class for items inside transaction
+    // data class TransactionItem(val prodID: Int, val quantity: Int, val price: Float)
+    // private val items = mutableListOf<TransactionItem>()
+}
 
+fun validateString(input: String, max: Int): String {
+    var current = input
+    while (true) {
+        if (current.length <= max && current.isNotEmpty()) return current
+        else {
+            println("Input can only be up to $max characters long. Please try again:")
+            current = readln()
+        }
+    }
+}
 
-//steps 1. obj setup, register set up, seller set up, buyer set up, admin
+fun register() {
+    // suggestion: ask for user details, validate them, add to users HashMap
+}
+
+fun login() {
+    // suggestion: check userID & password before entering menu
+}
+
+fun userMenu(userID: Int) {
+    // fixed println syntax
+    println("Welcome, ${userID}!")  
+    // suggestion: use when clause for menu choices inside a loop, not recursion
+}
+
+fun main() {
+    // main loop: keep running until user exits
+    register()
+    // suggestion: avoid deep function calls; use while(true) for menu navigation
+}
