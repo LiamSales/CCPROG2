@@ -1,9 +1,8 @@
-import kotlinx.datetime.LocalDate
-import kotlinx.datetime.Month
+import kotlin.system.exitProcess
+import kotlin.io.readlnOrNull
 
-// create HashMaps for quick lookup later if needed
-// val users = mutableMapOf<Int, User>()
-// val items = mutableMapOf<Int, Item>()
+val users = mutableMapOf<Int, User>()
+val items = mutableMapOf<Int, Item>()
 
 class User(
     val id: Int,
@@ -59,41 +58,92 @@ class Transaction(
     val seller: Int,
     val date: String
 ) {
-    // MutableList lets you add multiple items with quantities
-    private val itemArray = mutableListOf<Int>()    // replaced Arrayof<Int>(5)
+    private val itemArray = mutableListOf<Int>()
 
-    // Suggestion: use a data class for items inside transaction
-    // data class TransactionItem(val prodID: Int, val quantity: Int, val price: Float)
-    // private val items = mutableListOf<TransactionItem>()
+    data class TransactionItem(val prodID: Int, val quantity: Int, val price: Float)
+    private val items = mutableListOf<TransactionItem>()
 }
 
-fun validateString(input: String, max: Int): String {
+fun validateString(input: String?, max: Int): String {
     var current = input
     while (true) {
-        if (current.length <= max && current.isNotEmpty()) return current
-        else {
+        if (current != null && current.length <= max && current.isNotEmpty()) {
+            return current
+        } else {
             println("Input can only be up to $max characters long. Please try again:")
-            current = readln()
+            current = readlnOrNull()
         }
     }
 }
 
-// fun register() {
-//     // suggestion: ask for user details, validate them, add to users HashMap
-// }
+fun validateID(type: Boolean, idInput: Int?): Int {
+    var id = idInput
+    // true type for user, false type for item
+    if (type) {
+        while (true) {
+            if (id == null || users.containsKey(id)) {
+                println("Invalid ID please try again:")
+                id = readlnOrNull()?.toIntOrNull()
+            } else return id
+        }
+    } else {
+        while (true) {
+            if (id == null || items.containsKey(id)) {
+                println("Invalid ID please try again:")
+                id = readlnOrNull()?.toIntOrNull()
+            } else return id
+        }
+    }
+}
 
-// fun login() {
-//     // suggestion: check userID & password before entering menu
-// }
+fun register() {
+    // ask for user details, validate them, add to users HashMap
+    println("\n============================\n")
 
-// fun userMenu(userID: Int) {
-//     // fixed println syntax
-//     println("Welcome, ${userID}!")  
-//     // suggestion: use when clause for menu choices inside a loop, not recursion
-// }
+    while (true) {
+        println("Please input your ID:")
+        val id = validateID(true, readlnOrNull()?.toIntOrNull())
+
+        println("Please input your Name:")
+        val name = validateString(readlnOrNull(), 20)
+
+        println("Please input your Password:")
+        val password = validateString(readlnOrNull(), 10)
+
+        println("Please input your Address:")
+        val address = validateString(readlnOrNull(), 30)
+
+        println("Please input your Contact Number:")
+        val contact = readlnOrNull()?.toIntOrNull() ?: 0
+
+        println("Press S to save, X to cancel, and R to redo")
+        when (readlnOrNull()?.lowercase()) {
+            "x" -> return
+            "r" -> continue
+            "s" -> {
+                val newUser = User(id, name, password, address, contact)
+                users[id] = newUser
+                println("User registered successfully!")
+                return
+            }
+            else -> println("Invalid input, please try again.")
+        }
+    }
+}
+
+fun login() {
+    // check userID & password before entering menu
+}
 
 fun main() {
-    // main loop: keep running until user exits
-    // register()
-    // suggestion: avoid deep function calls; use while(true) for menu navigation
+    while (true) {
+        println("\n============================\n")
+        println("Press R to register. Press L to login. Press X to exit the program.")
+        when (readlnOrNull()?.lowercase()) {
+            "r" -> register()
+            "l" -> login()
+            "x" -> exitProcess(0)
+            else -> println("\tInvalid input.\n")
+        }
+    }
 }
