@@ -97,7 +97,7 @@ fun validateID(type: Boolean, idInput: Int?): Int {
 }
 
 fun register() {
-    // ask for user details, validate them, add to users HashMap
+
     println("\n============================\n")
 
     while (true) {
@@ -117,6 +117,8 @@ fun register() {
         val contact = readlnOrNull()?.toIntOrNull() ?: 0
 
         println("Press S to save, X to cancel, and R to redo")
+
+        //how do i loop this such that invalid input please try again reprompts this
         when (readlnOrNull()?.lowercase()) {
             "x" -> return
             "r" -> continue
@@ -126,13 +128,25 @@ fun register() {
                 println("User registered successfully!")
                 return
             }
-            else -> println("Invalid input, please try again.")
+            else -> println("Invalid input, please try again:")
         }
     }
 }
 
 fun login() {
-    // check userID & password before entering menu
+
+    // x in userid to cancel, return
+    // use hashmap to check if key's password value matches, loop if invalid
+    // if valid usermenu(key), return
+}
+
+fun userMenu(user: Int){
+    //x to logout, return, goes to main()
+    //b for buy
+    buyMenu(user)
+    //s for sell
+    sellMenu(user)
+    //else loops
 }
 
 fun main() {
