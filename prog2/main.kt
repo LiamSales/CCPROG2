@@ -125,6 +125,7 @@ fun register() {
             "s" -> {
                 val newUser = User(id, name, password, address, contact)
                 users[id] = newUser
+                //inserts in the file
                 println("User registered successfully!")
                 return
             }
@@ -135,18 +136,38 @@ fun register() {
 
 fun login() {
 
-    // x in userid to cancel, return
-    // use hashmap to check if key's password value matches, loop if invalid
-    // if valid usermenu(key), return
+    while(true) {
+
+        println("\n============================\n")
+        println("Press x then enter at the username to go back to the main menu")
+        println("Username:")
+        val username = readlnOrNull()?.lowerCase()
+        if (username == "X") return
+        println("Password:")
+        val password = readlnOrNull()
+        
+        if (users[username].?password == password){
+            userMenu(username)
+            return
+        }
+
+        println("Invalid input. Please try again.")
+
+    }
 }
 
 fun userMenu(user: Int){
+
+    while(true){
+
     //x to logout, return, goes to main()
     //b for buy
     buyMenu(user)
     //s for sell
     sellMenu(user)
     //else loops
+
+    }
 }
 
 fun main() {
