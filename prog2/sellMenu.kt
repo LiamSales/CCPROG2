@@ -1,10 +1,10 @@
 fun sellMenu(user: Int){
-    
+    //choices
 }
 
-
-fun addNewItem(){
-
+fun addNewItem(user: Int){
+// just like registering a user
+// todo: enforce itemtype limit
 }
 
 fun editStock(){

@@ -13,13 +13,13 @@ class User(
 ) {
     val itemIDs = mutableListOf<Int>()
 
-    fun addItem(itemID: Int) {
-        if (itemIDs.size < 20) {
-            this.itemIDs.add(itemID)
-        } else {
-            println("Cannot add more than 20 items.")
-        }
-    }
+    // fun addItem(itemID: Int) {
+    //     if (itemIDs.size < 20) {
+    //         this.itemIDs.add(itemID)
+    //     } else {
+    //         println("Cannot add more than 20 items.")
+    //     }
+    // }
 }
 
 class Item(
@@ -116,7 +116,7 @@ fun register() {
         println("Please input your Contact Number:")
         val contact = readlnOrNull()?.toIntOrNull() ?: 0
 
-        println("Press S to save, X to cancel, and R to redo")
+        println("Press Sthere to save, X to cancel, and R to redo")
 
         //how do i loop this such that invalid input please try again reprompts this
         when (readlnOrNull()?.lowercase()) {
@@ -160,11 +160,14 @@ fun userMenu(user: Int){
 
     while(true){
 
-    //x to logout, return, goes to main()
-    //b for buy
-    buyMenu(user)
-    //s for sell
-    sellMenu(user)
+        //b for buy
+        buyMenu(user)
+        //s for sell
+        sellMenu(user)
+        
+        //x to logout, return, goes to main()
+        //In this option, if  are any items left in the user’s cart, these will be saved to a binary1file of Itemswith the filename <user’s ID>.bag (example: 123.bag). The program then exits the user menu and goes back to the main menu. 
+
     //else loops
 
     }
@@ -177,6 +180,7 @@ fun main() {
         when (readlnOrNull()?.lowercase()) {
             "r" -> register()
             "l" -> login()
+            "a" -> admin()
             "x" -> exitProcess(0)
             else -> println("\tInvalid input.\n")
         }
