@@ -2,6 +2,8 @@ import kotlin.system.exitProcess
 import kotlin.io.readlnOrNull
 import kotlin.text.toInt
 import java.io.File
+import getUsers
+import getItems
 
 class User(
     val id: Int,
@@ -167,7 +169,7 @@ fun validateString(input: String?, max: Int): String {
 }
 
 fun validateID(type: Boolean, idInput: Int?): Int {
-    
+
     var id = idInput
 
     if (type) {
@@ -268,7 +270,13 @@ fun userMenu(user: Int){
 }
 
 fun main() {
+    
+    setUpFiles()
+    getUsers()
+    getItems()
+
     while (true) {
+
         println("\n============================\n")
         println("Press R to register. Press L to login. Press X to exit the program.")
         when (readlnOrNull()?.lowercase()) {
