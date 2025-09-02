@@ -2,8 +2,6 @@ import kotlin.system.exitProcess
 import kotlin.io.readlnOrNull
 import kotlin.text.toInt
 import java.io.File
-import getUsers
-import getItems
 
 class User(
     val id: Int,
@@ -278,12 +276,12 @@ fun main() {
     while (true) {
 
         println("\n============================\n")
-        println("Press R to register. Press L to login. Press X to exit the program.")
+        println("Press R to register.\nPress L to login.\nPress A for admin options.\nPress X to exit the program.")
         when (readlnOrNull()?.lowercase()) {
             "r" -> register()
             "l" -> login()
             "a" -> admin()
-            "x" -> { //sort both maps, rewrite both text files completely
+            "x" -> { //rewrite both files with all updates where (key) IDs are listed in ascending order
                  exitProcess(0)
             }
             else -> println("\tInvalid input.\n")
