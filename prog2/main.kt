@@ -10,16 +10,7 @@ class User(
     val address: String,
     val contact: Int
 ) {
-
     val itemIDs = mutableListOf<Int>()
-
-    fun addItem(itemID: Int) {
-        if (itemIDs.size < 20) {
-            this.itemIDs.add(itemID)
-        } else {
-            println("Cannot add more than 20 items.")
-        }
-    }
 }
 
 class Item(
@@ -191,40 +182,40 @@ fun register() {
 
     println("\n============================\n")
 
-    while (true) {
-        println("Please input your ID:")
-        val id = validateID(true, readlnOrNull()?.toIntOrNull())
+    if (users.size<100)
+        while (true) {
+            println("Please input your ID:")
+            val id = validateID(true, readlnOrNull()?.toIntOrNull())
 
-        println("Please input your Name:")
-        val name = validateString(readlnOrNull(), 20)
+            println("Please input your Name:")
+            val name = validateString(readlnOrNull(), 20)
 
-        println("Please input your Password:")
-        val password = validateString(readlnOrNull(), 10)
+            println("Please input your Password:")
+            val password = validateString(readlnOrNull(), 10)
 
-        println("Please input your Address:")
-        val address = validateString(readlnOrNull(), 30)
+            println("Please input your Address:")
+            val address = validateString(readlnOrNull(), 30)
 
-        println("Please input your Contact Number:")
-        val contact = readlnOrNull()?.toIntOrNull() ?: 0
+            println("Please input your Contact Number:")
+            val contact = readlnOrNull()?.toIntOrNull() ?: 0
 
-        println("Press Sthere to save, X to cancel, and R to redo")
+            println("Press S to save, X to cancel, and R to redo")
 
-        //how do i loop this such that invalid input please try again reprompts this
-        when (readlnOrNull()?.lowercase()) {
-            "x" -> return
-            "r" -> continue
-            "s" -> {
-                val newUser = User(id, name, password, address, contact)
-                users[id] = newUser
-
-                // sort then rewrite user text file
-
-                println("User registered successfully!")
-                return
+            //how do i loop this such that invalid input please try again reprompts this
+            when (readlnOrNull()?.lowercase()) {
+                "x" -> return
+                "r" -> continue
+                "s" -> {
+                    users[id] = User(id, name, password, address, contact)
+                    // sort then rewrite user text file
+                    println("User registered successfully!")
+                    return
+                }
+                else -> println("Invalid input, please try again:")
             }
-            else -> println("Invalid input, please try again:")
         }
-    }
+    else println("Sorry, maximum number of users reached.")
+    return
 }
 
 fun login() {
