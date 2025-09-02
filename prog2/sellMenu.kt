@@ -1,4 +1,16 @@
-fun validateQuantity(input: Int?): Int? {
+fun validateQuantity(input: Int?): Int {
+    var current = input
+    while (true) {
+        if (current>=0) {
+            return current
+        } else {
+            println("Input cannot be negative please try again:")
+            current = readlnOrNull()?.toIntOrNull()()
+        }
+    }
+}
+
+fun validatePrice(input: Float?): Float {
     var current = input
     while (true) {
         if (current>=0) {
@@ -11,45 +23,41 @@ fun validateQuantity(input: Int?): Int? {
 }
 
 
-fun sellMenu(user: Int){
-    //choices
-}
-
 fun addNewItem(user: Int){
-
+    
     println("\n============================\n")
-
+    
     if ((users[user]?.itemIDs?.size ?: 0) > 20){
         println("Cannot add more than 20 items.")
     } else {
-
+        
         println("Please input the item ID:")
         val id = validateID(false, readlnOrNull()?.toIntOrNull())
-
+        
         println("Please input your the item name:")
         val name = validateString(readlnOrNull(), 20)
-
+        
         println("Please input your the item category:")
         val category = validateString(readlnOrNull(), 20)
-
+        
         println("Please input your the item description:")
         val description = validateString(readlnOrNull(), 20)
         
         println("Please input your the item quantity:")
         val quantity = validateQuantity
-
+        
         println("Please input your the item price:")
         val price = validatePrice
-
+        
         println("Press S to save, X to cancel, and R to redo")
-
+        
         when (readlnOrNull()?.lowercase()) {
             "x" -> return
             "r" -> continue
             "s" -> {
-
+                
                 if (quantity){
-
+                    
                     users[user].itemIDs.add(id)
                     items[id] = Item(id, user, name, category, description, quantity, price)
                 }
@@ -62,14 +70,22 @@ fun addNewItem(user: Int){
     return
 }
 
-fun editStock(){
+fun editStock(user: Int): String{
 
+    while (true){
+        val 
+    }
+    return "$ has been added, new stock currently at $"
 }
 
 fun showMyProducts(){
-
+    
 }
 
-fun showLowStock(){
+fun showLowStock(user: Int){
+    //for each loop on the list of the user, if <5 then print here
+}
 
+fun sellMenu(user: Int){
+    //choices
 }
