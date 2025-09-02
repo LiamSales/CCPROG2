@@ -1,13 +1,14 @@
 import kotlin.system.exitProcess
 import kotlin.io.readlnOrNull
+import java.io.File
+import Item
 
-val users = mutableMapOf<Int, User>()
-val items = mutableMapOf<Int, Item>()
+)
 
 class User(
     val id: Int,
-    val name: String,
     val password: String,
+    val name: String,
     val address: String,
     val contact: Int
 ) {
@@ -28,8 +29,8 @@ class Item(
     var name: String,
     var category: String,
     var description: String,
-    var price: Float,
-    var quantity: Int
+    var quantity: Int,
+    var price: Float
 ) {
     fun subtractQuantity(decrement: Int) {
         if (decrement <= this.quantity) this.quantity -= decrement
@@ -64,6 +65,96 @@ class Transaction(
     private val items = mutableListOf<TransactionItem>()
 }
 
+val userfile = File("Users")
+val itemfile = File("Items")
+
+val users = mutableMapOf<Int, User>()
+val items = mutableMapOf<Int, Item>()
+
+fun setUpFiles(){
+
+    if (!userfile.exists()) {
+        userfile.createNewFile()
+    }
+
+    getUsers()
+
+    if (!itemfile.exists()){
+        itemfile.createNewFile()
+    }
+
+    getItems()
+
+    return
+}
+
+fun getUsers(){
+
+    val lines = userfile.readLines()
+
+    var i = 0
+
+    while (i < lines.size){
+
+        if (lines[i].isEmpty()){
+            i++
+            continue
+        }
+
+        if (i+3>= lines.size) break
+
+        val idPass = lines[i].split(" ", limit = 2)
+        val id = idPass[0].toInt()
+        val password = if (idPass.size > 1) idPass[1] else ""
+        val name = lines[i + 1]
+        val address = lines[i + 2]
+        val contact = lines[i + 3].toInt()
+
+        users[id] = User(id, password, name, address, contact)
+
+        i+=5
+
+    }
+
+    return
+
+}
+
+fun getItems(){
+
+    val lines = itemfile.readLines()
+
+    var i = 0
+
+        while (i < lines.size){
+
+        if (lines[i].isEmpty()){
+            i++
+            continue
+        }
+
+        if (i+4>= lines.size) break
+
+
+        val prodsell = lines[i].split(" ", limit = 2)
+        val prodID = prodsell[0].toInt()
+        val sellID = prodsell[1].toInt()
+        val name = lines[i+1]
+        val category = lines[i+2]
+        val description = lines[i+3]
+        val quantprice = lines[i+4].split(" ", limit = 2)
+        val quantity = quantprice[0].toInt()
+        val price = quantprice[1].toFloat()
+
+        items[prodID] = Item(prodID, sellID, name, category, description, quantity, price)
+
+        i+=6
+    }
+
+    return
+
+}
+
 fun validateString(input: String?, max: Int): String {
     var current = input
     while (true) {
@@ -78,7 +169,7 @@ fun validateString(input: String?, max: Int): String {
 
 fun validateID(type: Boolean, idInput: Int?): Int {
     var id = idInput
-    // true type for user, false type for item
+
     if (type) {
         while (true) {
             if (id == null || users.containsKey(id)) {
@@ -125,7 +216,9 @@ fun register() {
             "s" -> {
                 val newUser = User(id, name, password, address, contact)
                 users[id] = newUser
+
                 //inserts in the file
+
                 println("User registered successfully!")
                 return
             }
@@ -146,7 +239,7 @@ fun login() {
         println("Password:")
         val password = readlnOrNull()
         
-        if (users[username].?password == password){
+        if (users[username]?.password == password){
             userMenu(username)
             return
         }
