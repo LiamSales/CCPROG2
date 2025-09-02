@@ -1,15 +1,23 @@
+fun showAllUsers(){
+    
+}
+
+
 fun admin(){
-    //ask for password
-    //if yes:
 
-        //show all users, linear display
-        //show all sellers
+    println("\n============================\n")
+    println("Please enter the administrator password:")
 
+    val pwInput = readlnOrNull()
 
+    if (pwInput == "H3LLo?"){
 
-        //show total sales
+        
 
-
-
-    //else unautherized, press any key to go back to main menu, return
+    } else {
+        println("\n Unauthorized access not allowed. Press any key to continue")
+        readln()
+    }
+    
+    return
 }

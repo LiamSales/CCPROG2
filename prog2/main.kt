@@ -1,9 +1,7 @@
 import kotlin.system.exitProcess
 import kotlin.io.readlnOrNull
+import kotlin.text.toInt
 import java.io.File
-import Item
-
-)
 
 class User(
     val id: Int,
@@ -12,15 +10,16 @@ class User(
     val address: String,
     val contact: Int
 ) {
+
     val itemIDs = mutableListOf<Int>()
 
-    // fun addItem(itemID: Int) {
-    //     if (itemIDs.size < 20) {
-    //         this.itemIDs.add(itemID)
-    //     } else {
-    //         println("Cannot add more than 20 items.")
-    //     }
-    // }
+    fun addItem(itemID: Int) {
+        if (itemIDs.size < 20) {
+            this.itemIDs.add(itemID)
+        } else {
+            println("Cannot add more than 20 items.")
+        }
+    }
 }
 
 class Item(
@@ -168,6 +167,7 @@ fun validateString(input: String?, max: Int): String {
 }
 
 fun validateID(type: Boolean, idInput: Int?): Int {
+    
     var id = idInput
 
     if (type) {
@@ -217,7 +217,7 @@ fun register() {
                 val newUser = User(id, name, password, address, contact)
                 users[id] = newUser
 
-                //inserts in the file
+                // sort then rewrite user text file
 
                 println("User registered successfully!")
                 return
@@ -234,11 +234,12 @@ fun login() {
         println("\n============================\n")
         println("Press x then enter at the username to go back to the main menu")
         println("Username:")
-        val username = readlnOrNull()?.lowerCase()
+        val username = readlnOrNull()?.lowercase()
         if (username == "X") return
         println("Password:")
         val password = readlnOrNull()
         
+        // data type mismatch
         if (users[username]?.password == password){
             userMenu(username)
             return
@@ -274,7 +275,9 @@ fun main() {
             "r" -> register()
             "l" -> login()
             "a" -> admin()
-            "x" -> exitProcess(0)
+            "x" -> { //sort both maps, rewrite both text files completely
+                 exitProcess(0)
+            }
             else -> println("\tInvalid input.\n")
         }
     }
