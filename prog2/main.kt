@@ -1,6 +1,5 @@
 import kotlin.system.exitProcess
 import kotlin.io.readlnOrNull
-import kotlin.text.toInt
 import java.io.File
 
 class User(
@@ -27,30 +26,14 @@ class Item(
         else println("Not enough stock available.")
     }
 
-    fun replenish(stock: Int) {
-        this.quantity += stock
-    }
-
-    fun changeCategory(newCategory: String) {
-        this.category = newCategory
-    }
-
-    fun changeDescription(newDescription: String) {
-        this.description = newDescription
-    }
-
-    fun changePrice(newPrice: Float) {
-        this.price = newPrice
-    }
+    fun replenish(stock: Int) { this.quantity += stock }
+    fun changeCategory(newCategory: String) { this.category = newCategory }
+    fun changeDescription(newDescription: String) { this.description = newDescription }
+    fun changePrice(newPrice: Float) { this.price = newPrice }
 }
 
-class Transaction(
-    val buyer: Int,
-    val seller: Int,
-    val date: String
-) {
+class Transaction(val buyer: Int, val seller: Int, val date: String) {
     private val itemArray = mutableListOf<Int>()
-
     data class TransactionItem(val prodID: Int, val quantity: Int, val price: Float)
     private val items = mutableListOf<TransactionItem>()
 }
@@ -61,96 +44,55 @@ val itemfile = File("Items")
 val users = mutableMapOf<Int, User>()
 val items = mutableMapOf<Int, Item>()
 
-fun setUpFiles(){
-
-    if (!userfile.exists()) {
-        userfile.createNewFile()
-    }
-
+fun setUpFiles() {
+    if (!userfile.exists()) userfile.createNewFile()  
+    if (!itemfile.exists()) itemfile.createNewFile()  
     getUsers()
-
-    if (!itemfile.exists()){
-        itemfile.createNewFile()
-    }
-
     getItems()
-
-    return
 }
 
-fun getUsers(){
-
+fun getUsers() {
     val lines = userfile.readLines()
-
     var i = 0
-
-    while (i < lines.size){
-
-        if (lines[i].isEmpty()){
-            i++
-            continue
-        }
-
-        if (i+3>= lines.size) break
-
+    while (i < lines.size) {
+        if (lines[i].isEmpty()) { i++; continue }
+        if (i + 3 >= lines.size) break
         val idPass = lines[i].split(" ", limit = 2)
         val id = idPass[0].toInt()
         val password = if (idPass.size > 1) idPass[1] else ""
         val name = lines[i + 1]
         val address = lines[i + 2]
         val contact = lines[i + 3].toInt()
-
         users[id] = User(id, password, name, address, contact)
-
-        i+=5
-
+        i += 5
     }
-
-    return
-
 }
 
-fun getItems(){
-
+fun getItems() {
     val lines = itemfile.readLines()
-
     var i = 0
-
-        while (i < lines.size){
-
-        if (lines[i].isEmpty()){
-            i++
-            continue
-        }
-
-        if (i+4>= lines.size) break
-
-
+    while (i < lines.size) {
+        if (lines[i].isEmpty()) { i++; continue }
+        if (i + 4 >= lines.size) break
         val prodsell = lines[i].split(" ", limit = 2)
         val prodID = prodsell[0].toInt()
         val sellID = prodsell[1].toInt()
-        val name = lines[i+1]
-        val category = lines[i+2]
-        val description = lines[i+3]
-        val quantprice = lines[i+4].split(" ", limit = 2)
+        val name = lines[i + 1]
+        val category = lines[i + 2]
+        val description = lines[i + 3]
+        val quantprice = lines[i + 4].split(" ", limit = 2)
         val quantity = quantprice[0].toInt()
         val price = quantprice[1].toFloat()
-
         items[prodID] = Item(prodID, sellID, name, category, description, quantity, price)
-
-        i+=6
+        i += 6
     }
-
-    return
-
 }
 
 fun validateString(input: String?, max: Int): String {
     var current = input
     while (true) {
-        if (current != null && current.length <= max && current.isNotEmpty()) {
-            return current
-        } else {
+        if (current != null && current.length <= max && current.isNotEmpty()) return current
+        else {
             println("Input can only be up to $max characters long. Please try again:")
             current = readlnOrNull()
         }
@@ -158,9 +100,7 @@ fun validateString(input: String?, max: Int): String {
 }
 
 fun validateID(type: Boolean, idInput: Int?): Int {
-
     var id = idInput
-
     if (type) {
         while (true) {
             if (id == null || users.containsKey(id)) {
@@ -179,102 +119,67 @@ fun validateID(type: Boolean, idInput: Int?): Int {
 }
 
 fun register() {
-
     println("\n============================\n")
-
-    if (users.size<100)
+    if (users.size < 100) {
         while (true) {
             println("Please input your ID:")
             val id = validateID(true, readlnOrNull()?.toIntOrNull())
-
             println("Please input your Name:")
             val name = validateString(readlnOrNull(), 20)
-
             println("Please input your Password:")
             val password = validateString(readlnOrNull(), 10)
-
             println("Please input your Address:")
             val address = validateString(readlnOrNull(), 30)
-
             println("Please input your Contact Number:")
             val contact = readlnOrNull()?.toIntOrNull() ?: 0
-
             println("Press S to save, X to cancel, and R to redo")
-
-            //how do i loop this such that invalid input please try again reprompts this
             when (readlnOrNull()?.lowercase()) {
                 "x" -> return
                 "r" -> continue
                 "s" -> {
-                    users[id] = User(id, name, password, address, contact)
-                    // sort then rewrite user text file
+                    users[id] = User(id, password, name, address, contact)
                     println("User registered successfully!")
                     return
                 }
                 else -> println("Invalid input, please try again:")
             }
         }
-    else println("Sorry, maximum number of users reached.")
-    return
+    } else println("Sorry, maximum number of users reached.")
 }
 
 fun login() {
-
-    while(true) {
-
+    while (true) {
         println("\n============================\n")
         println("Press x then enter at the username to go back to the main menu")
-        println("Username:")
-        val username = readlnOrNull()?.lowercase()
-        if (username == "X") return
+        println("Username (ID):")
+        val username = readlnOrNull()
+        if (username?.lowercase() == "x") return
+        val userID = username?.toIntOrNull()
         println("Password:")
         val password = readlnOrNull()
-        
-        // data type mismatch
-        if (users[username]?.password == password){
-            userMenu(username)
+        if (userID != null && users[userID]?.password == password) {
+            userMenu(userID)
             return
         }
-
         println("Invalid input. Please try again.")
-
     }
 }
 
-fun userMenu(user: Int){
-
-    while(true){
-
-        //b for buy
-        buyMenu(user)
-        //s for sell
-        sellMenu(user)
-        
-        //x to logout, return, goes to main()
-        //In this option, if  are any items left in the user’s cart, these will be saved to a binary1file of Itemswith the filename <user’s ID>.bag (example: 123.bag). The program then exits the user menu and goes back to the main menu. 
-
-    //else loops
-
-    }
+fun userMenu(user: Int) {
+    println("Welcome, ${users[user]?.name}!")
+    // add buyMenu, sellMenu later
 }
 
 fun main() {
-    
     setUpFiles()
-    getUsers()
-    getItems()
-
     while (true) {
-
         println("\n============================\n")
         println("Press R to register.\nPress L to login.\nPress A for admin options.\nPress X to exit the program.")
         when (readlnOrNull()?.lowercase()) {
             "r" -> register()
             "l" -> login()
             "a" -> admin()
-            "x" -> { //rewrite both files with all updates where (key) IDs are listed in ascending order
-                 exitProcess(0)
-            }
+            "x" -> exitProcess(0)
             else -> println("\tInvalid input.\n")
         }
     }
