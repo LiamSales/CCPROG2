@@ -49,6 +49,7 @@ fun setUpFiles() {
     if (!itemfile.exists()) itemfile.createNewFile()  
     getUsers()
     getItems()
+    return
 }
 
 fun getUsers() {
@@ -65,7 +66,7 @@ fun getUsers() {
         val contact = lines[i + 3].toInt()
         users[id] = User(id, password, name, address, contact)
         i += 5
-    }
+    } return
 }
 
 fun getItems() {
@@ -85,7 +86,7 @@ fun getItems() {
         val price = quantprice[1].toFloat()
         items[prodID] = Item(prodID, sellID, name, category, description, quantity, price)
         i += 6
-    }
+    } return
 }
 
 fun validateString(input: String?, max: Int): String {
@@ -131,7 +132,7 @@ fun register() {
             println("Please input your Address:")
             val address = validateString(readlnOrNull(), 30)
             println("Please input your Contact Number:")
-            val contact = readlnOrNull()?.toIntOrNull() ?: 0
+            val contact = readlnOrNull()?.toIntOrNull() ?: 0 //should have validation?
             println("Press S to save, X to cancel, and R to redo")
             when (readlnOrNull()?.lowercase()) {
                 "x" -> return
@@ -139,12 +140,16 @@ fun register() {
                 "s" -> {
                     users[id] = User(id, password, name, address, contact)
                     println("User registered successfully!")
+                    //save userfile, rewrite the old one
                     return
                 }
                 else -> println("Invalid input, please try again:")
             }
         }
-    } else println("Sorry, maximum number of users reached.")
+    } else {
+        println("Sorry, maximum number of users reached.")
+        return
+    }
 }
 
 fun login() {
@@ -167,14 +172,20 @@ fun login() {
 
 fun userMenu(user: Int) {
     println("Welcome, ${users[user]?.name}!")
-    // add buyMenu, sellMenu later
+    println("Press B to enter the buy menu.\nPress S to enter the sell menu.\nPress any other key to log-out.")
+    when (readlnOrNull()?.lowercase()) {
+        "b" -> buyMenu(user)
+        "s" -> sellMenu(user)
+        else -> return
+    }
+    return
 }
 
 fun main() {
     setUpFiles()
     while (true) {
         println("\n============================\n")
-        println("Press R to register.\nPress L to login.\nPress A for admin options.\nPress X to exit the program.")
+        println("Press R to register.\nPress L to log-in.\nPress A for admin options.\nPress X to exit the program.")
         when (readlnOrNull()?.lowercase()) {
             "r" -> register()
             "l" -> login()
