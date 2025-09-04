@@ -1,15 +1,15 @@
 fun showAllUsers() {
     println("ID \tPassword \tName \tAddress \tContact")
-    users.forEach { (_, user) -> // iterate key-value pairs properly
-        println("${user.id} \t${user.password} \t${user.name} \t${user.address} \t${user.contact}")
+    users.forEach { (key, value) -> // iterate key-value pairs properly
+        println("${value.id} \t${value.password} \t${value.name} \t${value.address} \t${value.contact}")
     }
 }
 
 fun showAllSellers() {
     println("ID \tPassword \tName \tAddress \tContact \t# of Items")
-    users.forEach { (_, user) ->
-        if (user.itemIDs.isNotEmpty()) {
-            println("${user.id} \t${user.password} \t${user.name} \t${user.address} \t${user.contact} \t${user.itemIDs.size}")
+    users.forEach { (key, value) ->
+        if (value.itemIDs.isNotEmpty()) {
+            println("${value.id} \t${value.password} \t${value.name} \t${value.address} \t${value.contact} \t${value.itemIDs.size}")
         }
     }
 }

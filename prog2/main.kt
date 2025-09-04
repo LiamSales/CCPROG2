@@ -177,7 +177,7 @@ fun userMenu(user: Int) {
     println("Press B to enter the buy menu.\nPress S to enter the sell menu.\nPress x to log-out.")
     while (true){
         when (readlnOrNull()?.lowercase()) {
-            "b" -> buyMenu(user)
+            "b" -> buyMenu()
             "s" -> sellMenu(user)
             "x" -> return
             else -> println("\tInvalid input please try again:.\n")
