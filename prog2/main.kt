@@ -172,13 +172,15 @@ fun login() {
 
 fun userMenu(user: Int) {
     println("Welcome, ${users[user]?.name}!")
-    println("Press B to enter the buy menu.\nPress S to enter the sell menu.\nPress any other key to log-out.")
-    when (readlnOrNull()?.lowercase()) {
-        "b" -> buyMenu(user)
-        "s" -> sellMenu(user)
-        else -> return
+    println("Press B to enter the buy menu.\nPress S to enter the sell menu.\nPress x to log-out.")
+    while (true){
+        when (readlnOrNull()?.lowercase()) {
+            "b" -> buyMenu(user)
+            "s" -> sellMenu(user)
+            "x" -> return
+            else -> continue
+        }
     }
-    return
 }
 
 fun main() {
