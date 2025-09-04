@@ -134,6 +134,8 @@ fun register() {
             println("Please input your Contact Number:")
             val contact = readlnOrNull()?.toIntOrNull() ?: 0 //should have validation?
             println("Press S to save, X to cancel, and R to redo")
+
+            // fix invalid input
             when (readlnOrNull()?.lowercase()) {
                 "x" -> return
                 "r" -> continue
@@ -178,7 +180,7 @@ fun userMenu(user: Int) {
             "b" -> buyMenu(user)
             "s" -> sellMenu(user)
             "x" -> return
-            else -> continue
+            else -> println("\tInvalid input please try again:.\n")
         }
     }
 }
