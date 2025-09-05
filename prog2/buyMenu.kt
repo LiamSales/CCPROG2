@@ -10,7 +10,7 @@ fun viewAllProducts(sortedList: List<Item>) {
 fun showProductsofSpecific() {
 
     println("Please provide the seller ID:")
-    val id = readlnOrNull()?.toIntOrNull() ?: 0
+    val id = readlnOrNull()?.toInt()
 
     users[id]?.itemIDs?.forEach{
         item ->  if (items[item]?.quantity > 0) println("${items[item]?.prodID}\t${items[item]?.name}\t${items[item]?.category}\t${items[item]?.price}\t${items[item]?.quantity}\t")
@@ -19,21 +19,64 @@ fun showProductsofSpecific() {
     return
 }
 
-fun searchByCategory(sortedList: List<Item>) {
-    // string contains
+fun searchByCategory() {
+
+    println("Please provide the category:")
+    val search = readln()
+
+    items.forEach { (key, value) -> 
+        if (value.category.contains(search)) println("${value.prodID}\t${value.name}\t${value.category}\t${value.price}\t${value.quantity}\t")
+    }
+    return
 }
 
-fun searchByName(sortedList: List<Item>) {
-    // string contains
+fun searchByName() {
+
+    println("Please provide the name:")
+    val search = readln()
+
+    items.forEach { (key, value) -> 
+        if (value.name.contains(search)) println("${value.prodID}\t${value.name}\t${value.category}\t${value.price}\t${value.quantity}\t")
+    }
+    return
 }
 
-fun addToCart(cart: MutableList<BuyItem>): MutableList<BuyItem> {
+fun addToCart(cart: MutableList<BuyItem>, user: Int){
 
+    if (cart.size<10){
+
+        println("Provide the product ID:")
+        val id = readln().toInt()
+
+        if (items[id]?.sellID == user){
+            println("Cannot add item you are selling. Press any button to continue")
+            readln()
+            return
+        } 
+
+        println("Provide the quantity:")
+
+        val quantity = readln().toInt() // loop asking again if quantity<1
+        
+        val entry = BuyItem(user, id, quantity)
+
+        cart.add(entry)
+
+    } else {
+        println("Cannot add more items to cart. Maximum capacity reached. Press any button to continue")
+        readln()
+    }
+    return
 }
 
-fun editCart(cart: MutableList<BuyItem>): MutableList<BuyItem> {
+fun editCart(cart: MutableList<BuyItem>) {
     // if cart not empty
+    // remove items from specific seller (linear search)
+    // remove specific item
+    // edit quantity
+    // finish (return)
 }
+
 
 fun checkOutMenu(cart: MutableList<BuyItem>): String {
     // ask the date
@@ -43,7 +86,7 @@ fun checkOutMenu(cart: MutableList<BuyItem>): String {
     return "Items checked out successfully!"
 }
 
-fun buyMenu() {
+fun buyMenu(user: Int) {
     
     val cart = mutableListOf<BuyItem>()
     val sortedList = items.values.toList().sortedBy { it.sellID }
@@ -57,9 +100,9 @@ fun buyMenu() {
                 when (readlnOrNull()?.lowercase()) {
                 "v" -> viewAllProducts(sortedList)
                 "s" -> showProductsofSpecific()
-                "c" -> searchByCategory(sortedList)
-                "n" -> searchByName(sortedList)
-                "a" -> addToCart(cart)
+                "c" -> searchByCategory()
+                "n" -> searchByName()
+                "a" -> addToCart(cart, user)
                 "e" -> editCart(cart)
                 "o" -> checkOutMenu(cart)
                 "x" -> return
