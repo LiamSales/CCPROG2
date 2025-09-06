@@ -47,8 +47,8 @@ val items = mutableMapOf<Int, Item>()
 fun setUpFiles() {
     if (!userfile.exists()) userfile.createNewFile()  
     if (!itemfile.exists()) itemfile.createNewFile()  
-    getUsers()
     getItems()
+    getUsers()
     return
 }
 
@@ -66,7 +66,10 @@ fun getUsers() {
         val contact = lines[i + 3].toInt()
         users[id] = User(id, password, name, address, contact)
         i += 5
-    } return
+    }
+        items.forEach { (_, item) ->
+        users[item.sellID]?.itemIDs?.add(item.prodID)
+    }
 }
 
 fun getItems() {
@@ -86,7 +89,8 @@ fun getItems() {
         val price = quantprice[1].toFloat()
         items[prodID] = Item(prodID, sellID, name, category, description, quantity, price)
         i += 6
-    } return
+    }
+    return
 }
 
 fun validateString(input: String?, max: Int): String {
@@ -142,7 +146,7 @@ fun register() {
                 "s" -> {
                     users[id] = User(id, password, name, address, contact)
                     println("User registered successfully!")
-                    //save userfile, rewrite the old one
+                    userfile.appendText("$id $password\n$name\n$address\n$contact\n\n")
                     return
                 }
                 else -> println("Invalid input, please try again:")
@@ -199,3 +203,8 @@ fun main() {
         }
     }
 }
+
+
+//lessons learned:
+//filter operator works like SQL WHERE clause for lists, can be used to group objects
+//groupby uses a map, where the key is the condition
