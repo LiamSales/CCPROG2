@@ -1,8 +1,11 @@
 import kotlin.system.exitProcess
 import kotlin.io.readlnOrNull
 import java.io.File
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
+import java.time.format.DateTimeParseException
 
-class User(
+data class User(
     val id: Int,
     val password: String,
     val name: String,
@@ -12,7 +15,7 @@ class User(
     val itemIDs = mutableListOf<Int>()
 }
 
-class Item(
+data class Item(
     val prodID: Int,
     val sellID: Int,
     var name: String,
@@ -32,24 +35,26 @@ class Item(
     fun changePrice(newPrice: Float) { this.price = newPrice }
 }
 
-class Transaction(val buyer: Int, val seller: Int, val date: String) {
-    private val itemArray = mutableListOf<Int>()
-    data class TransactionItem(val prodID: Int, val quantity: Int, val price: Float)
-    private val items = mutableListOf<TransactionItem>()
+data class TransactionItem(val prodID: Int, val quantity: Int, val unitPrice: Float)
+data class Transaction(val buyer: Int, val seller: Int, val date: String, val items: List<TransactionItem>) {
+    fun totalAmount(): Float = items.sumOf { it.quantity * it.unitPrice }
 }
 
-val userfile = File("Users")
-val itemfile = File("Items")
+val userfile = File("Users.txt")
+val itemfile = File("Items.txt")
+val tranfile = File("Transactions.txt")
 
 val users = mutableMapOf<Int, User>()
 val items = mutableMapOf<Int, Item>()
+val transactions = mutableListOf<Transaction>()
 
 fun setUpFiles() {
-    if (!userfile.exists()) userfile.createNewFile()  
-    if (!itemfile.exists()) itemfile.createNewFile()  
+    if (!userfile.exists()) userfile.createNewFile()
+    if (!itemfile.exists()) itemfile.createNewFile()
+    if (!tranfile.exists()) tranfile.createNewFile()
     getItems()
     getUsers()
-    return
+    getTransactions()
 }
 
 fun getUsers() {
@@ -59,15 +64,16 @@ fun getUsers() {
         if (lines[i].isEmpty()) { i++; continue }
         if (i + 3 >= lines.size) break
         val idPass = lines[i].split(" ", limit = 2)
-        val id = idPass[0].toInt()
+        val id = idPass[0].toIntOrNull() ?: run { i += 5; continue }
         val password = if (idPass.size > 1) idPass[1] else ""
         val name = lines[i + 1]
         val address = lines[i + 2]
-        val contact = lines[i + 3].toInt()
+        val contact = lines[i + 3].toIntOrNull() ?: 0
         users[id] = User(id, password, name, address, contact)
         i += 5
     }
-        items.forEach { (_, item) ->
+    // link items to users' itemIDs
+    items.forEach { (_, item) ->
         users[item.sellID]?.itemIDs?.add(item.prodID)
     }
 }
@@ -79,18 +85,86 @@ fun getItems() {
         if (lines[i].isEmpty()) { i++; continue }
         if (i + 4 >= lines.size) break
         val prodsell = lines[i].split(" ", limit = 2)
-        val prodID = prodsell[0].toInt()
-        val sellID = prodsell[1].toInt()
+        val prodID = prodsell.getOrNull(0)?.toIntOrNull() ?: run { i += 6; continue }
+        val sellID = prodsell.getOrNull(1)?.toIntOrNull() ?: run { i += 6; continue }
         val name = lines[i + 1]
         val category = lines[i + 2]
         val description = lines[i + 3]
         val quantprice = lines[i + 4].split(" ", limit = 2)
-        val quantity = quantprice[0].toInt()
-        val price = quantprice[1].toFloat()
+        val quantity = quantprice.getOrNull(0)?.toIntOrNull() ?: 0
+        val price = quantprice.getOrNull(1)?.toFloatOrNull() ?: 0f
         items[prodID] = Item(prodID, sellID, name, category, description, quantity, price)
         i += 6
     }
-    return
+}
+
+fun getTransactions() {
+    // Simple parser for Transactions.txt format created by saveTransactions()
+    // Each transaction block:
+    // DATE|buyer|seller
+    // prodID qty unitPrice
+    // ...
+    // --- (separator)
+    if (!tranfile.exists()) return
+    val lines = tranfile.readLines()
+    var i = 0
+    while (i < lines.size) {
+        val header = lines[i]
+        if (header.isEmpty()) { i++; continue }
+        val headerParts = header.split("|")
+        if (headerParts.size != 3) { i++; continue }
+        val date = headerParts[0]
+        val buyer = headerParts[1].toIntOrNull() ?: 0
+        val seller = headerParts[2].toIntOrNull() ?: 0
+        i++
+        val itemsList = mutableListOf<TransactionItem>()
+        while (i < lines.size && lines[i] != "---") {
+            val p = lines[i].split(" ")
+            val pid = p.getOrNull(0)?.toIntOrNull() ?: 0
+            val qty = p.getOrNull(1)?.toIntOrNull() ?: 0
+            val unit = p.getOrNull(2)?.toFloatOrNull() ?: 0f
+            itemsList.add(TransactionItem(pid, qty, unit))
+            i++
+        }
+        // skip separator
+        if (i < lines.size && lines[i] == "---") i++
+        transactions.add(Transaction(buyer, seller, date, itemsList))
+    }
+}
+
+fun saveUsers() {
+    val sb = StringBuilder()
+    users.values.sortedBy { it.id }.forEach { u ->
+        sb.append("${u.id} ${u.password}\n")
+        sb.append("${u.name}\n")
+        sb.append("${u.address}\n")
+        sb.append("${u.contact}\n\n")
+    }
+    userfile.writeText(sb.toString())
+}
+
+fun saveItems() {
+    val sb = StringBuilder()
+    items.values.sortedBy { it.prodID }.forEach { it ->
+        sb.append("${it.prodID} ${it.sellID}\n")
+        sb.append("${it.name}\n")
+        sb.append("${it.category}\n")
+        sb.append("${it.description}\n")
+        sb.append("${it.quantity} ${it.price}\n\n")
+    }
+    itemfile.writeText(sb.toString())
+}
+
+fun saveTransactions() {
+    val sb = StringBuilder()
+    transactions.forEach { t ->
+        sb.append("${t.date}|${t.buyer}|${t.seller}\n")
+        t.items.forEach { it2 ->
+            sb.append("${it2.prodID} ${it2.quantity} ${it2.unitPrice}\n")
+        }
+        sb.append("---\n")
+    }
+    tranfile.writeText(sb.toString())
 }
 
 fun validateString(input: String?, max: Int): String {
@@ -104,19 +178,19 @@ fun validateString(input: String?, max: Int): String {
     }
 }
 
-fun validateID(type: Boolean, idInput: Int?): Int {
+fun validateID(needUniqueUserID: Boolean, idInput: Int?): Int {
     var id = idInput
-    if (type) {
+    if (needUniqueUserID) {
         while (true) {
             if (id == null || users.containsKey(id)) {
-                println("Invalid ID please try again:")
+                println("Invalid or existing ID, please enter a new numeric ID:")
                 id = readlnOrNull()?.toIntOrNull()
             } else return id
         }
     } else {
         while (true) {
             if (id == null || items.containsKey(id)) {
-                println("Invalid ID please try again:")
+                println("Invalid or existing product ID, please enter a NEW numeric product ID:")
                 id = readlnOrNull()?.toIntOrNull()
             } else return id
         }
@@ -136,17 +210,16 @@ fun register() {
             println("Please input your Address:")
             val address = validateString(readlnOrNull(), 30)
             println("Please input your Contact Number:")
-            val contact = readlnOrNull()?.toIntOrNull() ?: 0 //should have validation?
+            val contact = readlnOrNull()?.toIntOrNull() ?: 0
             println("Press S to save, X to cancel, and R to redo")
 
-            // fix invalid input
             when (readlnOrNull()?.lowercase()) {
                 "x" -> return
                 "r" -> continue
                 "s" -> {
                     users[id] = User(id, password, name, address, contact)
                     println("User registered successfully!")
-                    userfile.appendText("$id $password\n$name\n$address\n$contact\n\n")
+                    saveUsers()
                     return
                 }
                 else -> println("Invalid input, please try again:")
@@ -183,13 +256,16 @@ fun userMenu(user: Int) {
         when (readlnOrNull()?.lowercase()) {
             "b" -> buyMenu(user)
             "s" -> sellMenu(user)
-            "x" -> return
+            "x" -> {
+                println("Logging out...")
+                return
+            }
             else -> println("\tInvalid input please try again:.\n")
         }
     }
 }
 
-fun main() {
+fun main(){
     setUpFiles()
     while (true) {
         println("\n============================\n")
@@ -198,13 +274,62 @@ fun main() {
             "r" -> register()
             "l" -> login()
             "a" -> admin()
-            "x" -> exitProcess(0)
+            "x" -> {
+                println("Saving data and exiting...")
+                saveUsers()
+                saveItems()
+                saveTransactions()
+                exitProcess(0)
+            }
             else -> println("\tInvalid input.\n")
         }
     }
 }
 
+/*
 
-//lessons learned:
-//filter operator works like SQL WHERE clause for lists, can be used to group objects
-//groupby uses a map, where the key is the condition
+notes after vibecoding:
+
+use data class when necessary instead of regular classes, do they work like structs?
+sumOf instead of foreach loop
+
+does the underscore in (_,x) tell the compiler to ignore?
+
+figure out how this works
+    // link items to users' itemIDs
+    items.forEach { (_, item) ->
+        users[item.sellID]?.itemIDs?.add(item.prodID)
+    }
+
+learn how string builder works
+
+fun saveUsers() {
+    val sb = StringBuilder()
+    users.values.sortedBy { it.id }.forEach { u ->
+        sb.append("${u.id} ${u.password}\n")
+        sb.append("${u.name}\n")
+        sb.append("${u.address}\n")
+        sb.append("${u.contact}\n\n")
+    }
+    userfile.writeText(sb.toString())
+}
+
+> ok this is for adding to the text file, but how does it do the new ones? does it just rebuild the entire dataset?
+
+always have !=null checks
+
+
+   println("Enter the number of the item to edit, or X to exit:")
+    val input = readlnOrNull()
+    if (input?.lowercase() == "x") return
+    val idx = input?.toIntOrNull()?.minus(1)
+    if (idx == null || idx !in cart.indices) {
+        println("Invalid selection.")
+        return
+
+what does the minus(1) do
+
+
+learn when to use try catch for errors
+
+*/

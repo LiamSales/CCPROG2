@@ -1,16 +1,18 @@
-class BuyItem(val buyer: Int, val item: Int, val quantity: Int)
+data class BuyItem(val buyer: Int, val item: Int, val quantity: Int)
 
 fun viewAllProducts(sortedList: List<Item>) {
-
     val grouped = sortedList.filter { it.quantity > 0 }.groupBy { it.sellID }
-    grouped.forEach { (sellerID, items) ->
+    grouped.forEach { (sellerID, itemsList) ->
         println("Seller ID: $sellerID\tSeller Name: ${users[sellerID]?.name}")
-        items.forEach { item ->
+        println("ProdID\tName\tCategory\tPrice\tQty")
+        itemsList.sortedBy { it.prodID }.forEach { item ->
             println("${item.prodID}\t${item.name}\t${item.category}\t${item.price}\t${item.quantity}")
         }
         println()
+        println("Press N for next seller, X to exit view, or Enter to continue:")
+        val cmd = readlnOrNull()
+        if (cmd?.lowercase() == "x") return
     }
-    return
 }
 
 fun showProductsofSpecific() {
@@ -20,33 +22,59 @@ fun showProductsofSpecific() {
         println("Invalid seller ID.")
         return
     }
-    users[id]?.itemIDs?.forEach { itemID ->
-        val item = items[itemID]
-        if (item != null && item.quantity > 0) {
+    println("Products for seller $id (${users[id]?.name}):")
+    println("ProdID\tName\tCategory\tPrice\tQty")
+    val list = users[id]?.itemIDs?.mapNotNull { items[it] }?.sortedBy { it.prodID } ?: emptyList()
+    list.forEach { item ->
+        if (item.quantity > 0)
             println("${item.prodID}\t${item.name}\t${item.category}\t${item.price}\t${item.quantity}")
-        }
     }
-    return
 }
 
 fun searchByCategory() {
     println("Please provide the category:")
-    val search = readln().lowercase()
-    items.forEach { (_, value) ->
-        if (value.category.lowercase().contains(search) && value.quantity > 0)
-            println("${value.prodID}\t${value.name}\t${value.category}\t${value.price}\t${value.quantity}")
+    val search = readlnOrNull()?.lowercase() ?: ""
+    val matches = items.values.filter { it.category.lowercase().contains(search) && it.quantity > 0 }
+    if (matches.isEmpty()) {
+        println("No results.")
+        return
     }
-    return
+    var idx = 0
+    while (idx < matches.size) {
+        val v = matches[idx]
+        println("ProdID: ${v.prodID}")
+        println("Name: ${v.name}")
+        println("Category: ${v.category}")
+        println("Description: ${v.description}")
+        println("Price: ${v.price} | Quantity: ${v.quantity}")
+        println("Press N for next, X to exit:")
+        val cmd = readlnOrNull()
+        if (cmd?.lowercase() == "x") return
+        idx++
+    }
 }
 
 fun searchByName() {
-    println("Please provide the name:")
-    val search = readln().lowercase()
-    items.forEach { (_, value) ->
-        if (value.name.lowercase().contains(search) && value.quantity > 0)
-            println("${value.prodID}\t${value.name}\t${value.category}\t${value.price}\t${value.quantity}")
+    println("Please provide the name keyword:")
+    val search = readlnOrNull()?.lowercase() ?: ""
+    val matches = items.values.filter { it.name.lowercase().contains(search) && it.quantity > 0 }
+    if (matches.isEmpty()) {
+        println("No results.")
+        return
     }
-    return
+    var idx = 0
+    while (idx < matches.size) {
+        val v = matches[idx]
+        println("ProdID: ${v.prodID}")
+        println("Name: ${v.name}")
+        println("Category: ${v.category}")
+        println("Description: ${v.description}")
+        println("Price: ${v.price} | Quantity: ${v.quantity}")
+        println("Press N for next, X to exit:")
+        val cmd = readlnOrNull()
+        if (cmd?.lowercase() == "x") return
+        idx++
+    }
 }
 
 fun addToCart(cart: MutableList<BuyItem>, user: Int) {
@@ -58,25 +86,24 @@ fun addToCart(cart: MutableList<BuyItem>, user: Int) {
             return
         }
         if (items[id]?.sellID == user) {
-            println("Cannot add item you are selling. Press any button to continue")
-            readln()
+            println("Cannot add item you are selling. Press Enter to continue")
+            readlnOrNull()
             return
         }
         println("Provide the quantity:")
         val quantity = readlnOrNull()?.toIntOrNull() ?: 0
         if (quantity < 1 || quantity > (items[id]?.quantity ?: 0)) {
-            println("Invalid quantity. Press any button to continue")
-            readln()
+            println("Invalid quantity. Press Enter to continue")
+            readlnOrNull()
             return
         }
         val entry = BuyItem(user, id, quantity)
         cart.add(entry)
         println("Item added to cart.")
     } else {
-        println("Cannot add more items to cart. Maximum capacity reached. Press any button to continue")
-        readln()
+        println("Cannot add more items to cart. Maximum capacity reached. Press Enter to continue")
+        readlnOrNull()
     }
-    return
 }
 
 fun editCart(cart: MutableList<BuyItem>) {
@@ -122,42 +149,77 @@ fun editCart(cart: MutableList<BuyItem>) {
 fun checkOutMenu(cart: MutableList<BuyItem>): String {
     if (cart.isEmpty()) return "Cart is empty."
     println("Enter date of purchase (YYYY-MM-DD):")
-    val date = readlnOrNull() ?: "Unknown"
-    cart.forEach { entry ->
-        val item = items[entry.item]
-        if (item != null && item.quantity >= entry.quantity) {
-            item.quantity -= entry.quantity
-            if (item.quantity == 0) {
-                // Optionally remove from user's itemIDs
-                users[item.sellID]?.itemIDs?.remove(item.prodID)
+    val inputDate = readlnOrNull() ?: ""
+    val date = try {
+        LocalDate.parse(inputDate, DateTimeFormatter.ISO_LOCAL_DATE).toString()
+    } catch (e: DateTimeParseException) {
+        LocalDate.now().toString()
+    }
+
+    // Group by seller so each seller becomes a transaction
+    val bySeller = cart.groupBy { items[it.item]?.sellID ?: -1 }
+    bySeller.forEach { (sellerID, list) ->
+        if (sellerID == -1) return@forEach
+        val tItems = mutableListOf<TransactionItem>()
+        var changed = false
+        for (entry in list) {
+            val item = items[entry.item]
+            if (item == null) continue
+            // final availability check
+            if (entry.quantity > item.quantity) {
+                println("Quantity changed for product ${item.prodID}. Old: ${entry.quantity}, New: ${item.quantity}")
+                changed = true
             }
+            val usedQty = minOf(entry.quantity, item.quantity)
+            if (usedQty <= 0) continue
+            tItems.add(TransactionItem(item.prodID, usedQty, item.price))
         }
+        if (tItems.isEmpty()) {
+            println("No available items for seller $sellerID. Skipping.")
+            return@forEach
+        }
+        // create Transaction and apply changes
+        val transaction = Transaction(list.first().buyer, sellerID, date, tItems)
+        // print receipt
+        println("\n--- RECEIPT ---")
+        println("Seller: $sellerID - ${users[sellerID]?.name ?: "Unknown"}")
+        println("Buyer: ${transaction.buyer} - ${users[transaction.buyer]?.name ?: "Unknown"}")
+        println("Date: ${transaction.date}")
+        println("Qty\tProdID\tName\tUnitPrice\tTotal")
+        transaction.items.forEach { it2 ->
+            val item = items[it2.prodID]
+            val lineTotal = it2.quantity * it2.unitPrice
+            println("${it2.quantity}\t${it2.prodID}\t${item?.name ?: "Unknown"}\t${it2.unitPrice}\t$lineTotal")
+            // subtract quantity
+            item?.quantity = (item?.quantity ?: 0) - it2.quantity
+            if (item != null && item.quantity <= 0) users[item.sellID]?.itemIDs?.remove(item.prodID)
+        }
+        println("Total due: ${transaction.totalAmount()}")
+        transactions.add(transaction)
     }
     cart.clear()
+    saveItems()
+    saveTransactions()
     return "Items checked out successfully!"
 }
 
 fun buyMenu(user: Int) {
-    
     val cart = mutableListOf<BuyItem>()
-    val sortedList = items.values.toList().sortedBy { it.sellID }
-
-
+    // refresh sorted list dynamically inside view
     println("Press V to view all products.\nPress S to show only the products of a specific seller.\nPress C to search for products by category.\nPress N to search for products by name.\n")
     println("Press A to add a product to your cart.\nPress E to edit your cart.\nPress O to check-out.\n")
-    println("Press X to exit without checking-out")
-
+    println("Press X to exit buy menu")
     while (true){
-                when (readlnOrNull()?.lowercase()) {
-                "v" -> viewAllProducts(sortedList)
-                "s" -> showProductsofSpecific()
-                "c" -> searchByCategory()
-                "n" -> searchByName()
-                "a" -> addToCart(cart, user)
-                "e" -> editCart(cart)
-                "o" -> checkOutMenu(cart)
-                "x" -> return
-                else -> println("\tInvalid input. Please try again:\n")
-            }
+        when (readlnOrNull()?.lowercase()) {
+            "v" -> viewAllProducts(items.values.toList().sortedBy { it.sellID })
+            "s" -> showProductsofSpecific()
+            "c" -> searchByCategory()
+            "n" -> searchByName()
+            "a" -> addToCart(cart, user)
+            "e" -> editCart(cart)
+            "o" -> println(checkOutMenu(cart))
+            "x" -> return
+            else -> println("\tInvalid input. Please try again:\n")
         }
+    }
 }
