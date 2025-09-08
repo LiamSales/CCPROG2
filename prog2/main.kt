@@ -1,6 +1,22 @@
 // conditionally accepted, missing: binary files for saving each cart instance
 // bug fixes needed for continue and sumOf clauses
 
+/*
+
+lessons learned:
+
+_ means ignore variable in destructuring.
+
+StringBuilder is for efficient string concatenation.
+
+minus(1) shifts user-friendly numbering to 0-based indexing.
+
+Always null-check inputs.
+
+Use try–catch when dealing with risky operations (files, parsing, external input).
+
+ */
+
 
 import kotlin.system.exitProcess
 import kotlin.io.readlnOrNull
