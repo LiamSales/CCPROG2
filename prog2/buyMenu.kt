@@ -149,38 +149,24 @@ fun editCart(cart: MutableList<BuyItem>) {
 fun checkOutMenu(cart: MutableList<BuyItem>): String {
     if (cart.isEmpty()) return "Cart is empty."
     println("Enter date of purchase (YYYY-MM-DD):")
-    val inputDate = readlnOrNull() ?: ""
-    val date = try {
-        LocalDate.parse(inputDate, DateTimeFormatter.ISO_LOCAL_DATE).toString()
-    } catch (e: DateTimeParseException) {
-        LocalDate.now().toString()
-    }
+    val date = readlnOrNull() ?: "Unknown"
 
-    // Group by seller so each seller becomes a transaction
+    // Group by seller manually
     val bySeller = cart.groupBy { items[it.item]?.sellID ?: -1 }
-    bySeller.forEach { (sellerID, list) ->
-        if (sellerID == -1) return@forEach
+    for ((sellerID, list) in bySeller) {
+        if (sellerID == -1) continue
         val tItems = mutableListOf<TransactionItem>()
-        var changed = false
         for (entry in list) {
-            val item = items[entry.item]
-            if (item == null) continue
-            // final availability check
-            if (entry.quantity > item.quantity) {
-                println("Quantity changed for product ${item.prodID}. Old: ${entry.quantity}, New: ${item.quantity}")
-                changed = true
-            }
+            val item = items[entry.item] ?: continue
             val usedQty = minOf(entry.quantity, item.quantity)
             if (usedQty <= 0) continue
             tItems.add(TransactionItem(item.prodID, usedQty, item.price))
         }
         if (tItems.isEmpty()) {
             println("No available items for seller $sellerID. Skipping.")
-            return@forEach
+            continue
         }
-        // create Transaction and apply changes
         val transaction = Transaction(list.first().buyer, sellerID, date, tItems)
-        // print receipt
         println("\n--- RECEIPT ---")
         println("Seller: $sellerID - ${users[sellerID]?.name ?: "Unknown"}")
         println("Buyer: ${transaction.buyer} - ${users[transaction.buyer]?.name ?: "Unknown"}")
@@ -190,9 +176,10 @@ fun checkOutMenu(cart: MutableList<BuyItem>): String {
             val item = items[it2.prodID]
             val lineTotal = it2.quantity * it2.unitPrice
             println("${it2.quantity}\t${it2.prodID}\t${item?.name ?: "Unknown"}\t${it2.unitPrice}\t$lineTotal")
-            // subtract quantity
             item?.quantity = (item?.quantity ?: 0) - it2.quantity
-            if (item != null && item.quantity <= 0) users[item.sellID]?.itemIDs?.remove(item.prodID)
+            if (item != null && item.quantity <= 0) {
+                users[item.sellID]?.itemIDs?.remove(item.prodID)
+            }
         }
         println("Total due: ${transaction.totalAmount()}")
         transactions.add(transaction)

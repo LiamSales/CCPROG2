@@ -15,19 +15,11 @@ fun showAllSellers() {
     }
 }
 
-fun parseDateInput(prompt: String): Pair<LocalDate?, LocalDate?> {
+fun parseDateInput(prompt: String): Pair<String?, String?> {
     println("$prompt (YYYY-MM-DD):")
-    val start = try {
-        LocalDate.parse(readlnOrNull(), DateTimeFormatter.ISO_LOCAL_DATE)
-    } catch (e: Exception) {
-        null
-    }
+    val start = readlnOrNull()
     println("End date (YYYY-MM-DD):")
-    val end = try {
-        LocalDate.parse(readlnOrNull(), DateTimeFormatter.ISO_LOCAL_DATE)
-    } catch (e: Exception) {
-        null
-    }
+    val end = readlnOrNull()
     return Pair(start, end)
 }
 
@@ -38,8 +30,8 @@ fun showTotalSalesInDuration() {
         return
     }
     val total = transactions.filter {
-        val d = try { LocalDate.parse(it.date) } catch (e: Exception) { null }
-        d != null && !d.isBefore(start) && !d.isAfter(end)
+    val d = it.date
+    d >= start && d <= end
     }.sumOf { it.totalAmount() }
     println("Total sales from $start to $end = $total")
 }

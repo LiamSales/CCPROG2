@@ -1,3 +1,7 @@
+// conditionally accepted, missing: binary files for saving each cart instance
+// bug fixes needed for continue and sumOf clauses
+
+
 import kotlin.system.exitProcess
 import kotlin.io.readlnOrNull
 import java.io.File
@@ -39,6 +43,7 @@ data class TransactionItem(val prodID: Int, val quantity: Int, val unitPrice: Fl
 data class Transaction(val buyer: Int, val seller: Int, val date: String, val items: List<TransactionItem>) {
     fun totalAmount(): Float = items.sumOf { it.quantity * it.unitPrice }
 }
+
 
 val userfile = File("Users.txt")
 val itemfile = File("Items.txt")
@@ -85,8 +90,8 @@ fun getItems() {
         if (lines[i].isEmpty()) { i++; continue }
         if (i + 4 >= lines.size) break
         val prodsell = lines[i].split(" ", limit = 2)
-        val prodID = prodsell.getOrNull(0)?.toIntOrNull() ?: run { i += 6; continue }
-        val sellID = prodsell.getOrNull(1)?.toIntOrNull() ?: run { i += 6; continue }
+        val prodID = prodsell.getOrNull(0)?.toIntOrNull() ?: run { i += 6 }
+        val sellID = prodsell.getOrNull(1)?.toIntOrNull() ?: run { i += 6 }
         val name = lines[i + 1]
         val category = lines[i + 2]
         val description = lines[i + 3]
@@ -290,8 +295,14 @@ fun main(){
 
 notes after vibecoding:
 
+main almost perfect, just needed to tweak the file system
+had the concepts down in sell menu, EZ just autopilot it
+buy menu coulda been adjusted with more structure, try learning if SQL query equivalents exist in kotlin
+admin menu same as sell, but do not constrain yourself to ONLY working with strings, you can just convert then reconvert if it makes things easier
+
+
 use data class when necessary instead of regular classes, do they work like structs?
-sumOf instead of foreach loop
+sumOf instead of foreach loop, more readability and generally easier to not reinvent the wheel
 
 does the underscore in (_,x) tell the compiler to ignore?
 
